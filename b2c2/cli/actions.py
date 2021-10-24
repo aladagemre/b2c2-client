@@ -6,30 +6,24 @@ from rich.console import Console
 from rich.table import Table
 
 import b2c2.cli.questions as q
-from b2c2.cli import apiclient
-from b2c2.cli.apiclient import (
-    check_connection,
-    create_order_from_rfq,
-    get_balance,
-    get_order_detail,
-    get_order_history,
-)
+from b2c2.cli.apiclient import B2C2Client
 from b2c2.cli.utils import (
-    print_green,
     print_red,
     prompt_decimal,
     prompt_list,
     prompt_string,
     prompt_yes_no,
 )
+from b2c2.settings import API_URL, TOKEN
 
 logger = logging.getLogger(__name__)
+api_client = B2C2Client(token=TOKEN, api_url=API_URL)
 
 
 def list_instruments():
     if not check_api_connection():
         return
-    instruments = apiclient.list_instruments()
+    instruments = api_client.list_instruments()
     if not instruments:
         logger.error("Could not connect to the server. Please try again later.")
         return
@@ -51,7 +45,7 @@ def request_for_quote(instrument_name=None):
     quantity = prompt_decimal("Quantity")
 
     # Make RFQ Request
-    rfq_response = apiclient.get_rfq(instrument_name, side, quantity)
+    rfq_response = api_client.get_rfq(instrument_name, side, quantity)
     if not rfq_response:
         return
 
@@ -62,27 +56,27 @@ def request_for_quote(instrument_name=None):
     if execute_order:
         order_type = prompt_list("Order Type:", ["FOK", "MKT"])
         executing_unit = prompt_string("Executing Unit:")
-        order_response = create_order_from_rfq(
+        order_response = api_client.create_order_from_rfq(
             rfq_response, order_type, executing_unit=executing_unit or ""
         )
         display_balance()
 
 
 def create_order():
-    list_instruments()
+    api_client.list_instruments()
 
 
 def display_balance():
     if not check_api_connection():
         return
-    balance = get_balance()
+    balance = api_client.get_balance()
     balance.display()
 
 
 def display_order_history():
     if not check_api_connection():
         return
-    orders = get_order_history()
+    orders = api_client.get_order_history()
     if not orders:
         print_red("No orders yet.")
         return
@@ -118,7 +112,7 @@ def display_order_details():
     if not check_api_connection():
         return
     order_id = prompt_string("Enter order_id / client_order_id:")
-    order = get_order_detail(order_id)
+    order = api_client.get_order_detail(order_id)
     order.display()
 
 
@@ -129,7 +123,7 @@ def display_trade_details():
 
 
 def check_api_connection():
-    return check_connection()
+    return api_client.check_connection()
 
 
 action_map = {
