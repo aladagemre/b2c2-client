@@ -5,30 +5,36 @@ from typing import List
 
 import requests
 
-from b2c2.cli.exceptions import HTTPException, get_http_exception_by_code
-from b2c2.cli.utils import print_green, print_red
-from b2c2.models import Balance, Instrument, OrderRequest, OrderResponse, RFQResponse
-from b2c2.settings import API_URL, TOKEN
+from b2c2.api_client.exceptions import HTTPException, get_http_exception_by_code
+from b2c2.common.models import (
+    Balance,
+    Instrument,
+    OrderRequest,
+    OrderResponse,
+    RFQResponse,
+)
 
 logger = logging.getLogger(__name__)
 
 
 class B2C2Client:
+    API_URL = "https://api.uat.b2c2.net"
+
     def __init__(self, token, api_url=None):
         self.token = token
-        self.api_url = api_url or API_URL
+        self.api_url = api_url or self.API_URL
         self.headers = {
             "Content-Type": "application/json",
-            "Authorization": f"Token {TOKEN}",
+            "Authorization": f"Token {self.token}",
         }
 
-    def _make_request(self, url, method="get", data=None):
+    def _make_request(self, url: str, method="get", data: dict = None):
         """
         requests.get/post wrapper handling exceptions
         :param url: URL to make request to
         :param method: "get" or "post"
         :param data: data to post
-        :return: response object or None
+        :return: response in json format
         """
         try:
             if method == "get":
@@ -54,17 +60,36 @@ class B2C2Client:
         except requests.exceptions.RequestException as _:
             logger.exception("Unknown error")
 
-    def _get(self, endpoint):
-        return self._make_request(f"{API_URL}{endpoint}", method="get")
+    def _get(self, endpoint: str):
+        """
+        Performs get request to the given endpoint.
+        :param endpoint: Ex: /balance/
+        :return: Response in json format
+        """
+        return self._make_request(f"{self.api_url}{endpoint}", method="get")
 
-    def _post(self, endpoint, data):
-        return self._make_request(f"{API_URL}{endpoint}", method="post", data=data)
+    def _post(self, endpoint: str, data: dict):
+        """
+        Performs POST request to the given endpoint
+        :param endpoint: Ex: /order/
+        :param data: Data dictionary
+        :return:
+        """
+        return self._make_request(f"{self.api_url}{endpoint}", method="post", data=data)
 
     def get_balance(self):
+        """
+        Returns the account balance
+        :return: `Balance` object containing quantities for each asset (USD, BTC, etc.)
+        """
         balance_dict = self._get("/balance/")
         return Balance(**balance_dict)
 
     def list_instruments(self):
+        """
+        Returns the instruments available for trading.
+        :return: A list of Instrument objects (with name attribute).
+        """
         try:
             instruments = self._get("/instruments/")
             return [Instrument(**instrument) for instrument in instruments]
@@ -74,6 +99,15 @@ class B2C2Client:
             logger.exception("Could not perform the request. Please try again later.")
 
     def get_rfq(self, instrument, side, quantity):
+        """
+        Sends a `RFQ (request for quote)` and returns the response from the server
+        :param instrument: Instrument object or instrument name (Ex: "BTCUSD.SPOT")
+        :param side: "buy" or "sell"
+        :param quantity: A numerical value to be handled as Decimal.
+        :return: `RFQResponse` object
+        """
+        if isinstance(instrument, Instrument):
+            instrument = instrument.name
         data = dict(
             instrument=instrument,
             side=side,
@@ -82,10 +116,9 @@ class B2C2Client:
         )
         response = self._post("/request_for_quote/", data=data)
         if not response:
-            print_red(
-                "Could not get response from the server. Please check your connection."
-            )
+            logger.error("Could not get RFQ", extra=dict(data=data))
             return None
+        # TODO: Application Errors
         return RFQResponse(**response)
 
     def create_order_from_rfq(self, rfq: RFQResponse, order_type, executing_unit=None):
@@ -105,10 +138,8 @@ class B2C2Client:
             raise Exception("Got invalid response from order endpoint.")
 
         order_response = OrderResponse(**response)
-        order_response.display()
 
         if order_response.is_rejected:
-            print_red("\nYour order was rejected.\n")
             logger.exception(
                 "Order %s was rejected",
                 order_response.order_id,
@@ -117,14 +148,15 @@ class B2C2Client:
                     "order_response": order_response,
                 },
             )
-            return order_response
-
-        logger.info(
-            "Order %s was successfully placed",
-            order_response.order_id,
-            extra={"order_request": order_request, "order_response": order_response},
-        )
-        print_green(f"\nYour order was successfully placed.\n")
+        else:
+            logger.info(
+                "Order %s was successfully placed",
+                order_response.order_id,
+                extra={
+                    "order_request": order_request,
+                    "order_response": order_response,
+                },
+            )
         return order_response
 
     def get_order_history(self) -> List[OrderResponse]:
@@ -138,7 +170,7 @@ class B2C2Client:
     def check_connection(self):
         """Checks whether we can connect to the server or not."""
         try:
-            requests.get(f"{API_URL}/instruments/", headers=self.headers)
+            requests.get(f"{self.api_url}/instruments/", headers=self.headers)
             return True
         except (ConnectionError, requests.exceptions.ConnectionError) as exc:
             logger.exception("Connection could not be established with the server.")

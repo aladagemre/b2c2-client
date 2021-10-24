@@ -1,16 +1,39 @@
 # -*- coding: utf-8 -*-
 import datetime
 from decimal import Decimal
+from enum import Enum
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from rich import print
 
-from b2c2.cli.utils import print_color, print_green
+
+class Side(str, Enum):
+    buy = "buy"
+    sell = "sell"
 
 
 class Instrument(BaseModel):
     name: str
+
+    def _is_currency(self, currency):
+        return currency in Balance.schema()["properties"].keys()
+
+    @property
+    def base(self):
+        return self.name.split(".")[0][3:]
+
+    @property
+    def quote(self):
+        currency = self.name.split(".")[0][3:]
+        if self._is_currency(currency):
+            return currency
+        else:
+            raise Exception("")
+
+    @property
+    def type(self):
+        return self.name.split(".")[-1]
 
     # TODO: pair, base, quote, type, etc.
 
@@ -36,7 +59,7 @@ class Balance(BaseModel):
 
 class RFQRequest(BaseModel):
     instrument: str  # Instrument as given by the /instruments/ endpoint.
-    side: str  # Either ‘buy’ or ‘sell’.
+    side: Side  # Either ‘buy’ or ‘sell’.
     quantity: Decimal  # Quantity in base currency (maximum 4 decimals).
     client_rfq_id: str  # A universally unique identifier that will be returned to you if the request succeeds.
 
@@ -46,7 +69,7 @@ class RFQResponse(BaseModel):
     rfq_id: str
     client_rfq_id: str  # A universally unique identifier that will be returned to you if the request succeeds.
     quantity: Decimal  # Quantity in base currency (maximum 4 decimals).
-    side: str  # Either ‘buy’ or ‘sell’.
+    side: Side  # Either ‘buy’ or ‘sell’.
     instrument: str  # Instrument as given by the /instruments/ endpoint.
     price: Decimal
     created: datetime.datetime
@@ -76,7 +99,7 @@ class RFQResponse(BaseModel):
 
 class OrderRequest(BaseModel):
     instrument: str
-    side: str
+    side: Side
     quantity: Decimal
     client_order_id: str
     price: Decimal
@@ -103,7 +126,7 @@ class Trade(BaseModel):
     price: Decimal
     quantity: Decimal
     order: str
-    side: str
+    side: Side
     executing_unit: str
 
     def display(self):
@@ -119,7 +142,7 @@ class OrderResponse(BaseModel):
     order_id: str
     client_order_id: str
     quantity: Decimal
-    side: str
+    side: Side
     instrument: str
     price: Decimal
     executed_price: Optional[Decimal]

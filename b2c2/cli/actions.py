@@ -6,15 +6,16 @@ from rich.console import Console
 from rich.table import Table
 
 import b2c2.cli.questions as q
-from b2c2.cli.apiclient import B2C2Client
+from b2c2.api_client.api import B2C2Client
 from b2c2.cli.utils import (
+    print_green,
     print_red,
     prompt_decimal,
     prompt_list,
     prompt_string,
     prompt_yes_no,
 )
-from b2c2.settings import API_URL, TOKEN
+from b2c2.common.settings import API_URL, TOKEN
 
 logger = logging.getLogger(__name__)
 api_client = B2C2Client(token=TOKEN, api_url=API_URL)
@@ -47,6 +48,9 @@ def request_for_quote(instrument_name=None):
     # Make RFQ Request
     rfq_response = api_client.get_rfq(instrument_name, side, quantity)
     if not rfq_response:
+        print_red(
+            "Could not get response from the server. Please check your connection."
+        )
         return
 
     rfq_response.display()
@@ -59,6 +63,12 @@ def request_for_quote(instrument_name=None):
         order_response = api_client.create_order_from_rfq(
             rfq_response, order_type, executing_unit=executing_unit or ""
         )
+        if order_response.is_rejected:
+            print_red("\nYour order was rejected.\n")
+        else:
+            print_green(f"\nYour order was successfully placed.\n")
+
+        order_response.display()
         display_balance()
 
 

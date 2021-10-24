@@ -6,6 +6,13 @@ from decimal import Decimal
 
 from fastapi import FastAPI, HTTPException
 
+from b2c2.common.models import (
+    OrderRequest,
+    OrderResponse,
+    RFQRequest,
+    RFQResponse,
+    Trade,
+)
 from b2c2.mockserver.defaults import BALANCE, INSTRUMENT_PRICES
 from b2c2.mockserver.settings import VALIDITY_WINDOW
 from b2c2.mockserver.utils import (
@@ -14,7 +21,6 @@ from b2c2.mockserver.utils import (
     get_price,
     get_quote_balance,
 )
-from b2c2.models import OrderRequest, OrderResponse, RFQRequest, RFQResponse, Trade
 
 app = FastAPI()
 
