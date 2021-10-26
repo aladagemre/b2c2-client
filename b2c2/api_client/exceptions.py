@@ -87,29 +87,3 @@ def get_http_exception_by_code(code: int):
     Otherwise generic HTTPException
     """
     return http_code_map.get(code, HTTPException)
-
-
-# ==== API Exceptions =====
-
-
-class APIException(Exception):
-    pass
-
-
-class QuoteNotValidException(APIException):
-    message = "Quote is not valid – Quote may have expired."
-    code = 1007
-
-
-class OrderRejectedException(APIException):
-    pass
-
-
-class PriceNotValid(APIException):
-    message = "Price not valid – The price is not valid anymore. This error can occur during big market moves."
-    code = 1009
-
-
-class NotEnoughBalance(APIException):
-    message = "Not enough balance – Not enough balance."
-    code = 1011

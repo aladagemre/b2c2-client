@@ -5,6 +5,7 @@ from typing import List
 
 import requests
 
+from b2c2.api_client.errors import get_api_error_by_code
 from b2c2.api_client.exceptions import HTTPException, get_http_exception_by_code
 from b2c2.common.models import (
     Balance,
@@ -28,6 +29,26 @@ class B2C2Client:
             "Authorization": f"Token {self.token}",
         }
 
+    def _raise_api_errors(self, response_json):
+        if isinstance(response_json, list):
+            # returned data, no problem.
+            return
+        errors = response_json.get("errors")
+        if not errors:
+            return
+
+        api_errors = []
+        for error in errors:
+            code = error.get("code")
+            message = error.get("message")
+            error = get_api_error_by_code(code)(message)
+            api_errors.append(error)
+            # Log all the API errors sent.
+            logger.error(error)
+
+        # Raise the first error
+        raise api_errors[0]
+
     def _make_request(self, url: str, method="get", data: dict = None):
         """
         requests.get/post wrapper handling exceptions
@@ -45,6 +66,7 @@ class B2C2Client:
                 logger.warning("Invalid request type:", method)
                 return
 
+            self._raise_api_errors(response.json())
             response.raise_for_status()
             return response.json()
         except requests.exceptions.HTTPError as exc:
