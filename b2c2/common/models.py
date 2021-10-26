@@ -2,7 +2,7 @@
 import datetime
 from decimal import Decimal
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from pydantic import BaseModel
 from rich import print
@@ -16,26 +16,45 @@ class Side(str, Enum):
 class Instrument(BaseModel):
     name: str
 
+    def _get_currencies(self):
+        # TODO: change
+        return Balance.schema()["properties"].keys()
+
     def _is_currency(self, currency):
-        return currency in Balance.schema()["properties"].keys()
+        return currency in self._get_currencies()
+
+    def pair(self) -> Tuple[str, str]:
+        """
+        Extracts (base, quote) from the instrument name (Ex: "BTCUSDT")
+        If can not validate the instrument, raises Exception.
+        :return: (base, quote) - Ex: ("BTC", "USDT")
+        """
+        instrument = self.name.split(".")[0]
+        if len(instrument) == 6:
+            return instrument[:3], instrument[3:]
+        elif len(instrument) == 7:
+            if self._is_currency(instrument[:3]) and self._is_currency(instrument[3:]):
+                # BTCUSDT
+                return instrument[:3], instrument[3:]
+            elif self._is_currency(instrument[:4]) and self._is_currency(
+                instrument[4:]
+            ):
+                # USDTUSD
+                return instrument[:4], instrument[4:]
+
+        raise Exception("Unexpected instrument: {}".format(instrument))
 
     @property
     def base(self):
-        return self.name.split(".")[0][3:]
+        return self.pair()[0]
 
     @property
     def quote(self):
-        currency = self.name.split(".")[0][3:]
-        if self._is_currency(currency):
-            return currency
-        else:
-            raise Exception("")
+        return self.pair()[1]
 
     @property
     def type(self):
         return self.name.split(".")[-1]
-
-    # TODO: pair, base, quote, type, etc.
 
 
 class Balance(BaseModel):
@@ -49,6 +68,7 @@ class Balance(BaseModel):
     LTC: Decimal = Decimal(0)
     XRP: Decimal = Decimal(0)
     BCH: Decimal = Decimal(0)
+    # USDT: Decimal = Decimal(0)
 
     def display(self):
         print("=" * 20 + " Balances " + "=" * 20)
