@@ -7,6 +7,7 @@ from rich.table import Table
 
 import b2c2.cli.questions as q
 from b2c2.api_client.api import B2C2Client
+from b2c2.cli.decorators import check_connection_before
 from b2c2.cli.tokens import ConfigManager
 from b2c2.cli.utils import (
     print_green,
@@ -47,9 +48,8 @@ class CommandLineInterface:
     def execute_command(self, action):
         self.action_map[action]()
 
+    @check_connection_before
     def list_instruments(self):
-        if not self.check_api_connection():
-            return
         instruments = self.api_client.list_instruments()
         if not instruments:
             self.logger.error(
@@ -64,9 +64,8 @@ class CommandLineInterface:
             return
         self.request_for_quote(instrument_name=answer)
 
+    @check_connection_before
     def request_for_quote(self, instrument_name=None):
-        if not self.check_api_connection():
-            return
         if not instrument_name:
             instrument_name = prompt_string("Instrument:")
         side = prompt_list("Side:", ["buy", "sell"])
@@ -100,18 +99,17 @@ class CommandLineInterface:
             order_response.display()
             self.display_balance()
 
+    @check_connection_before
     def create_order(self):
         self.api_client.list_instruments()
 
+    @check_connection_before
     def display_balance(self):
-        if not self.check_api_connection():
-            return
         balance = self.api_client.get_balance()
         balance.display()
 
+    @check_connection_before
     def display_order_history(self):
-        if not self.check_api_connection():
-            return
         orders = self.api_client.get_order_history()
         if not orders:
             print_red("No orders yet.")
@@ -138,21 +136,20 @@ class CommandLineInterface:
             table.add_row(*data)
         console.print(table)
 
+    @check_connection_before
     def display_trade_history(self):
-        if not self.check_api_connection():
-            return
+        pass
 
+    @check_connection_before
     def display_order_details(self):
-        if not self.check_api_connection():
-            return
         order_id = prompt_string("Enter order_id / client_order_id:")
         order = self.api_client.get_order_detail(order_id)
         order.display()
 
+    @check_connection_before
     def display_trade_details(self):
-        if not self.check_api_connection():
-            return
         # TODO: add
+        pass
 
     def _save_token(self, token):
         self.config.set_token(token)
