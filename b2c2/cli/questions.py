@@ -27,6 +27,7 @@ action_question = [
             "Display Trade History",
             "Display Order Details",
             "Display Trade Details",
+            "Token Settings",
             "Check connection",
             "Quit",
         ],

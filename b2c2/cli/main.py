@@ -5,16 +5,19 @@ import os
 from PyInquirer import prompt
 from rich import print
 
-from b2c2.cli.actions import action_map
+from b2c2.cli.actions import CommandLineInterface
 from b2c2.cli.questions import action_question
+from b2c2.cli.tokens import ConfigManager
 
 logger = logging.getLogger(__name__)
 
 
 def menu():
+    config = ConfigManager()
+    cmd = CommandLineInterface(config=config)
     print("\n[yellow]" + "=" * 50 + "[/yellow]\n")
     action = prompt(action_question)["action"]
-    action_map[action]()
+    cmd.execute_command(action)
 
 
 def create_log_folder():
