@@ -105,8 +105,7 @@ class B2C2Client:
         :return: `Balance` object containing quantities for each asset (USD, BTC, etc.)
         """
         balance_dict = self._get("/balance/")
-        return balance_dict
-        # return Balance(**balance_dict)
+        return Balance(**balance_dict)
 
     def list_instruments(self):
         """

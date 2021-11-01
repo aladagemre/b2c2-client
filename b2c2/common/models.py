@@ -7,7 +7,7 @@ from typing import List, Optional, Tuple
 from pydantic import BaseModel
 from rich import print
 
-from b2c2.common.constants import CURRENCIES
+from b2c2.common.constants import CURRENCIES, FIAT_CURRENCIES
 
 
 class Side(str, Enum):
@@ -58,24 +58,18 @@ class Instrument(BaseModel):
         return self.name.split(".")[-1]
 
 
-class Balance(BaseModel):
-    USD: Decimal = Decimal(0)
-    BTC: Decimal = Decimal(0)
-    JPY: Decimal = Decimal(0)
-    GBP: Decimal = Decimal(0)
-    ETH: Decimal = Decimal(0)
-    EUR: Decimal = Decimal(0)
-    CAD: Decimal = Decimal(0)
-    LTC: Decimal = Decimal(0)
-    XRP: Decimal = Decimal(0)
-    BCH: Decimal = Decimal(0)
-    # USDT: Decimal = Decimal(0)
+class Balance(dict):
+    def __setitem__(self, key, value):
+        super(Balance, self).__setitem__(key, Decimal(value))
 
     def display(self):
         print("=" * 20 + " Balances " + "=" * 20)
-        for key, value in self.__dict__.items():
-            value = str(value)
-            print(f"[bold green]{key:3s}[/bold green]: {value}")
+        for key, value in self.items():
+            value = Decimal(value)
+            if key in FIAT_CURRENCIES:
+                print(f"[bold green]{key:3s}[/bold green]: {value:>16.2f}")
+            else:
+                print(f"[bold green]{key:3s}[/bold green]: {value:>22.8f}")
 
 
 class RFQRequest(BaseModel):
