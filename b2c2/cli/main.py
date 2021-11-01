@@ -5,7 +5,7 @@ import os
 from PyInquirer import prompt
 from rich import print
 
-from b2c2.cli.actions import CommandLineInterface
+from b2c2.cli.interface import CommandLineInterface
 from b2c2.cli.questions import action_question
 from b2c2.cli.tokens import ConfigManager
 
