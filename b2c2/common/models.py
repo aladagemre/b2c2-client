@@ -7,6 +7,8 @@ from typing import List, Optional, Tuple
 from pydantic import BaseModel
 from rich import print
 
+from b2c2.common.constants import CURRENCIES
+
 
 class Side(str, Enum):
     buy = "buy"
@@ -17,8 +19,7 @@ class Instrument(BaseModel):
     name: str
 
     def _get_currencies(self):
-        # TODO: change
-        return Balance.schema()["properties"].keys()
+        return CURRENCIES
 
     def _is_currency(self, currency):
         return currency in self._get_currencies()
