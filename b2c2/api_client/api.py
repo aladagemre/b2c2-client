@@ -6,13 +6,19 @@ from typing import List
 import requests
 
 from b2c2.api_client.errors import get_api_error_by_code
-from b2c2.api_client.exceptions import HTTPException, get_http_exception_by_code
+from b2c2.api_client.exceptions import (
+    HTTPException,
+    NotFound,
+    get_http_exception_by_code,
+)
 from b2c2.common.models import (
     Balance,
+    FillOrKillOrderRequest,
     Instrument,
-    OrderRequest,
+    MarketOrderRequest,
     OrderResponse,
     RFQResponse,
+    Trade,
 )
 
 logger = logging.getLogger(__name__)
@@ -143,19 +149,14 @@ class B2C2Client:
         # TODO: Application Errors
         return RFQResponse(**response)
 
-    def create_order_from_rfq(self, rfq: RFQResponse, order_type, executing_unit=None):
-        order_request = OrderRequest(
-            instrument=rfq.instrument,
-            side=rfq.side,
-            quantity=rfq.quantity,
-            client_order_id=str(uuid.uuid4()),
-            price=rfq.price,
-            order_type=order_type,
-            valid_until=rfq.valid_until,  # TODO: Define this
-            executing_unit=executing_unit,
-        )
+    def create_fok_order(self, fok_order_request: FillOrKillOrderRequest):
+        return self.create_order(fok_order_request.dict())
 
-        response = self._post("/order/", data=order_request.dict())
+    def create_mkt_order(self, mkt_order_request: MarketOrderRequest):
+        return self.create_order(mkt_order_request.dict())
+
+    def create_order(self, order_data):
+        response = self._post("/order/", data=order_data)
         if not response:
             raise Exception("Got invalid response from order endpoint.")
 
@@ -166,7 +167,7 @@ class B2C2Client:
                 "Order %s was rejected",
                 order_response.order_id,
                 extra={
-                    "order_request": order_request,
+                    "order_request": order_data,
                     "order_response": order_response,
                 },
             )
@@ -175,19 +176,53 @@ class B2C2Client:
                 "Order %s was successfully placed",
                 order_response.order_id,
                 extra={
-                    "order_request": order_request,
+                    "order_request": order_data,
                     "order_response": order_response,
                 },
             )
         return order_response
 
     def get_order_history(self) -> List[OrderResponse]:
+        """
+        Returns the list of orders performed.
+        :return: List[OrderResponse]
+        """
         order_list = self._get("/order/")
         return [OrderResponse(**order) for order in order_list]
 
     def get_order_detail(self, order_id) -> OrderResponse:
-        order = self._get(f"/order/{order_id}/")
-        return OrderResponse(**order)
+        """
+        Returns details of a particular order
+        :param order_id: the ID of the order
+        :return: OrderResponse object
+        """
+        try:
+            order = self._get(f"/order/{order_id}/")
+            return OrderResponse(**order)
+        except NotFound:
+            logger.exception("Order not found: {}".format(order_id))
+        return None
+
+    def get_trade_history(self) -> List[Trade]:
+        """
+        Returns the list of trade objects performed.
+        :return: List[Trade] objects
+        """
+        trade_list = self._get("/trade/")
+        return [Trade(**trade) for trade in trade_list]
+
+    def get_trade_detail(self, trade_id) -> Trade:
+        """
+        Returns details of a particular trade
+        :param trade_id: the ID of the trade
+        :return: Trade object
+        """
+        try:
+            trade = self._get(f"/trade/{trade_id}")
+            return Trade(**trade)
+        except NotFound:
+            logger.exception("Trade not found: {}".format(trade_id))
+        return None
 
     def check_connection(self):
         """Checks whether we can connect to the server or not."""

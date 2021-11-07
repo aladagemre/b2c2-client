@@ -102,6 +102,8 @@ def post_order(order_request: OrderRequest):
         )
     order_id = str(uuid.uuid4())
     price = get_price(order_request.instrument)
+    if not order_request.price:
+        order_request.price = price
     total_amount = price * order_request.quantity
     order_created = datetime.datetime.now()
     base_balance = get_base_balance(balance, order_request.instrument)

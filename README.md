@@ -59,3 +59,16 @@ $ source venv/bin/activate
 (venv) $ export TOKEN=abcdefghiklmnopqrstuvwxyz
 (venv) $ python -m b2c2.cli.main
 ```
+
+
+## Restrictions
+
+The sandbox API documentation is not comprehensive. So I had to make some assumptions.
+
+* User receives a RFQ. However when performing an order, there is no rfq argument. I assume server looks for the most recent relevant RFQ and executes the order accordingly.
+* There is no explanation on how to handle CFD vs SPOT. The sample balance in the API documentation indicate no CFDs. So I assumed it's the same as SPOT. When a user buys BTCUSD.CFD, then their BTC balance will increase, their USD balance will decrease. Leverage: 1X.
+* I assume `order/force_open` argument is only available for CFD instruments. That's why, I removed this argument for SPOT instrument orders.
+* Precisions page was not detailed enough. Precisions for displaying the balances were not clear. So I assumed the cryptos have 8 precision whereas fiat currencies have 2 precision point.
+* There is no mention of the format of your error messages and when they return. I made an assumption.
+* When an order is rejected, you return an OrderResponse with executed_pice=None, instead of returning "1011 - Not enough balance – Not enough balance.".
+* It is not clear whether the /balance response has a fixed set of keys (currencies). Because of that, I moved away from Modeling Balance with static fields, instead used a dictionary.

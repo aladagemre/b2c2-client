@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
+import datetime
 import logging
+import time
+import uuid
+from decimal import Decimal
 
 from PyInquirer import prompt
 from rich.console import Console
@@ -13,9 +17,16 @@ from b2c2.cli.utils import (
     print_green,
     print_red,
     prompt_decimal,
+    prompt_integer,
     prompt_list,
     prompt_string,
     prompt_yes_no,
+)
+from b2c2.common.models import (
+    FillOrKillOrderRequest,
+    Instrument,
+    MarketOrderRequest,
+    Side,
 )
 
 
@@ -87,10 +98,63 @@ class CommandLineInterface:
         )
         if execute_order:
             order_type = prompt_list("Order Type:", ["FOK", "MKT"])
+            instrument = Instrument(name=rfq_response.instrument)
+            if instrument.type == "CFD":
+                force_open = prompt_yes_no(
+                    "Do you want to open a new contract instead of closing existing ones?"
+                )
+            else:
+                force_open = False
+
             executing_unit = prompt_string("Executing Unit:")
+            validity_seconds = prompt_integer("Validity in seconds:", default=10)
+            valid_until = datetime.datetime.utcfromtimestamp(
+                time.time() + validity_seconds
+            ).strftime("%Y-%m-%dT%H:%M:%S")
+
+            if order_type == "FOK":
+                slippage = prompt_decimal(
+                    "Accepted Slippage in Basis Points:",
+                    default=Decimal(2.00),
+                    boundaries=(Decimal(0.0), Decimal(20.0)),
+                )
+                price = prompt_decimal("Price:", default=rfq_response.price)
+                fok_order_request = FillOrKillOrderRequest(
+                    instrument=instrument.name,  # TODO: use Instrument?
+                    side=side,
+                    quantity=quantity,
+                    client_order_id=str(uuid.uuid4()),  # TODO: move to the class
+                    valid_until=valid_until,
+                    executing_unit=executing_unit,
+                    force_open=force_open,
+                    price=price,
+                    acceptable_slippage_in_basis_points=slippage,
+                )
+                order_response = self.api_client.create_fok_order(
+                    fok_order_request=fok_order_request
+                )
+
+            elif order_type == "MKT":
+                mkt_order_request = MarketOrderRequest(
+                    instrument=instrument.name,  # TODO: use Instrument?
+                    side=side,
+                    quantity=quantity,
+                    client_order_id=str(uuid.uuid4()),  # TODO: move to the class
+                    valid_until=valid_until,
+                    executing_unit=executing_unit,
+                    force_open=force_open,
+                )
+                order_response = self.api_client.create_mkt_order(mkt_order_request)
+
+            """
             order_response = self.api_client.create_order_from_rfq(
-                rfq_response, order_type, executing_unit=executing_unit or ""
+                rfq=rfq_response,
+                order_type=order_type,
+                valid_until=valid_until,
+                executing_unit=executing_unit,
+
             )
+            """
             if order_response.is_rejected:
                 print_red("\nYour order was rejected.\n")
             else:
@@ -101,7 +165,7 @@ class CommandLineInterface:
 
     @check_connection_before
     def create_order(self):
-        self.api_client.list_instruments()
+        self.list_instruments()
 
     @check_connection_before
     def display_balance(self):
@@ -133,23 +197,63 @@ class CommandLineInterface:
             table.add_column(column)
         for order in orders:
             data = [str(order.__dict__.get(col)) for col in columns]
-            table.add_row(*data)
+            if order.executed_price is None:
+                style = "grey37"
+            elif order.side == Side.buy:
+                style = "green"
+            elif order.side == Side.sell:
+                style = "red"
+            table.add_row(*data, style=style)
         console.print(table)
 
     @check_connection_before
     def display_trade_history(self):
-        pass
+        trades = self.api_client.get_trade_history()
+        if not trades:
+            print_red("No trades yet.")
+            return
+
+        # TODO: Add precisions and justify=right
+        columns = [
+            "created",
+            "order",
+            "trade_id",
+            "quantity",
+            "side",
+            "instrument",
+            "price",
+            "executing_unit",
+            "origin",
+            "rfq_id",
+        ]
+        console = Console()
+        table = Table(show_header=True, header_style="bold magenta")
+        for column in columns:
+            table.add_column(column)
+        for trade in trades:
+            data = [str(trade.__dict__.get(col)) for col in columns]
+            if trade.side == Side.buy:
+                style = "green"
+            elif trade.side == Side.sell:
+                style = "red"
+            else:
+                style = "white"
+            table.add_row(*data, style=style)
+        console.print(table)
 
     @check_connection_before
     def display_order_details(self):
         order_id = prompt_string("Enter order_id / client_order_id:")
         order = self.api_client.get_order_detail(order_id)
-        order.display()
+        if order:
+            order.display()
 
     @check_connection_before
     def display_trade_details(self):
-        # TODO: add
-        pass
+        trade_id = prompt_string("Enter trade_id:")
+        trade = self.api_client.get_trade_detail(trade_id)
+        if trade:
+            trade.display()
 
     def _save_token(self, token):
         self.config.set_token(token)

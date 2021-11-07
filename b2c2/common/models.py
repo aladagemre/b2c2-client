@@ -14,6 +14,9 @@ class Side(str, Enum):
     buy = "buy"
     sell = "sell"
 
+    def __str__(self):
+        return self.name.upper()
+
 
 class Instrument(BaseModel):
     name: str
@@ -117,7 +120,7 @@ class OrderRequest(BaseModel):
     side: Side
     quantity: Decimal
     client_order_id: str
-    price: Decimal
+    price: Optional[Decimal]
     order_type: str
     valid_until: datetime.datetime
     executing_unit: Optional[str]
@@ -129,6 +132,48 @@ class OrderRequest(BaseModel):
         d["price"] = str(d["price"])
         d["quantity"] = str(d["quantity"])
         d["valid_until"] = d["valid_until"].strftime("%Y-%m-%dT%H:%M:%S")
+        return d
+
+    @staticmethod
+    def create(*args, **kwargs):
+        instrument = Instrument(name=kwargs["instrument"])
+
+        if instrument.type != "CFD":
+            kwargs.pop("force_open")
+
+        if kwargs["order_type"] == "FOK":
+            return FillOrKillOrderRequest(**kwargs)
+        elif kwargs["order_type"] == "MKT":
+            kwargs.drop("price")
+            kwargs.drop("acceptable_slippage_in_basis_points")
+            return MarketOrderRequest(**kwargs)
+
+
+class MarketOrderRequest(BaseModel):
+    order_type: str = "MKT"
+    instrument: str
+    side: Side
+    quantity: Decimal
+    client_order_id: str
+    valid_until: datetime.datetime
+    executing_unit: Optional[str]
+    force_open: Optional[bool]
+
+    def dict(self, *args, **kwargs):
+        d = super(MarketOrderRequest, self).dict()
+        d["quantity"] = str(d["quantity"])
+        d["valid_until"] = d["valid_until"].strftime("%Y-%m-%dT%H:%M:%S")
+        return d
+
+
+class FillOrKillOrderRequest(MarketOrderRequest):
+    order_type: str = "FOK"
+    price: Decimal
+    acceptable_slippage_in_basis_points: Optional[str]
+
+    def dict(self, *args, **kwargs):
+        d = super(FillOrKillOrderRequest, self).dict()
+        d["price"] = str(d["price"])
         return d
 
 
