@@ -28,6 +28,7 @@ action_question = [
             "Display Order Details",
             "Display Trade Details",
             "Token Settings",
+            "API URL Settings",
             "Check connection",
             "Quit",
         ],

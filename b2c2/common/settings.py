@@ -11,7 +11,6 @@ config = {
 
 REMOTE_API_URL = "https://api.uat.b2c2.net"
 LOCAL_API_URL = "http://127.0.0.1:8000"
-TOKEN = config.get("TOKEN")
 
 if config.get("LOCAL"):
     API_URL = LOCAL_API_URL

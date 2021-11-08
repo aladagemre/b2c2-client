@@ -12,11 +12,12 @@ class ConfigManager:
         self.logger = logging.getLogger(__name__)
         self.config = configparser.ConfigParser()
         self.config_path = str(Path.home() / ".b2c2")
-        self.load_config()
+
         if not os.path.exists(self.config_path):
             self.config["default"] = {"token": "", "api_url": API_URL}
             self.save_config()
-            self.load_config()
+
+        self.load_config()
 
     def load_config(self):
         self.config.read(self.config_path)
