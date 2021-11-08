@@ -166,15 +166,6 @@ class CommandLineInterface:
                 )
                 order_response = self.api_client.create_mkt_order(mkt_order_request)
 
-            """
-            order_response = self.api_client.create_order_from_rfq(
-                rfq=rfq_response,
-                order_type=order_type,
-                valid_until=valid_until,
-                executing_unit=executing_unit,
-
-            )
-            """
             if order_response.is_rejected:
                 print_red("\nYour order was rejected.\n")
             else:

@@ -3,19 +3,6 @@
 This project contains a command line app called `b2c2` that allows you perform trading
 operations through B2C2 liquidity provider.
 
-## Setting Credentials
-
-In order the app to work, you need to provide credentials through environment variables.
-You can set variables on the console, prior to running the app:
-```
-export TOKEN=abcdefghiklmnopqrstuvwxyz
-```
-
-Alternatively, you can create a file named `.env` and place variables within this file:
-```
-TOKEN=abcdefghiklmnopqrstuvwxyz
-```
-
 ## End User Installation
 ### Building the wheel file
 
@@ -32,6 +19,8 @@ $ source venv/bin/activate
 $ pip install b2c2_client-0.0.1-py3-none-any.whl
 $ b2c2
 ```
+
+Then you should set your token in the "Token Settings" menu.
 
 ## Developer Installation
 
@@ -56,10 +45,10 @@ On another console, you may run the app with local settings:
 ```bash
 $ source venv/bin/activate
 (venv) $ export LOCAL=1  # to indicate using local server on 127.0.0.1:8000
-(venv) $ export TOKEN=abcdefghiklmnopqrstuvwxyz
 (venv) $ python -m b2c2.cli.main
 ```
 
+Then you should set your token in the "Token Settings" menu. You can update the API_URL in the menu as well.
 
 ## Restrictions
 
@@ -70,5 +59,5 @@ The sandbox API documentation is not comprehensive. So I had to make some assump
 * I assume `order/force_open` argument is only available for CFD instruments. That's why, I removed this argument for SPOT instrument orders.
 * Precisions page was not detailed enough. Precisions for displaying the balances were not clear. So I assumed the cryptos have 8 precision whereas fiat currencies have 2 precision point.
 * There is no mention of the format of your error messages and when they return. I made an assumption.
-* When an order is rejected, you return an OrderResponse with executed_pice=None, instead of returning "1011 - Not enough balance – Not enough balance.".
+* When an order is rejected, you return an OrderResponse with executed_price=None, instead of returning "1011 - Not enough balance – Not enough balance.". So I check for the former. However if an API Exception is thrown, it is handled as displaying error message.
 * It is not clear whether the /balance response has a fixed set of keys (currencies). Because of that, I moved away from Modeling Balance with static fields, instead used a dictionary.

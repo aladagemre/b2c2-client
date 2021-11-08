@@ -146,7 +146,6 @@ class B2C2Client:
         if not response:
             logger.error("Could not get RFQ", extra=dict(data=data))
             return None
-        # TODO: Application Errors
         return RFQResponse(**response)
 
     def create_fok_order(self, fok_order_request: FillOrKillOrderRequest):
