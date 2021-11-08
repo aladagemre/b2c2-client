@@ -11,7 +11,10 @@ class Generic(APIError):
 
 
 class InstrumentNotAllowed(APIError):
-    message = "Instrument not allowed – Instrument does not exist or you are not authorized to trade it."
+    message = (
+        "Instrument not allowed – Instrument does not exist or you are not "
+        "authorized to trade it. "
+    )
     code = 1001
 
 
@@ -21,22 +24,34 @@ class TheRfqDoesNotBelongToYou(APIError):
 
 
 class DifferentInstrument(APIError):
-    message = "Different instrument – You tried to post a trade with a different instrument than the related RFQ."
+    message = (
+        "Different instrument – You tried to post a trade with a different "
+        "instrument than the related RFQ. "
+    )
     code = 1003
 
 
 class DifferentSide(APIError):
-    message = "Different side – You tried to post a trade with a different side than the related RFQ."
+    message = (
+        "Different side – You tried to post a trade with a different side than "
+        "the related RFQ. "
+    )
     code = 1004
 
 
 class DifferentPrice(APIError):
-    message = "Different price – You tried to post a trade with a different price than the related RFQ."
+    message = (
+        "Different price – You tried to post a trade with a different price "
+        "than the related RFQ. "
+    )
     code = 1005
 
 
 class DifferentQuantity(APIError):
-    message = "Different quantity – You tried to post a trade with a different quantity than the related RFQ."
+    message = (
+        "Different quantity – You tried to post a trade with a different "
+        "quantity than the related RFQ. "
+    )
     code = 1006
 
 
@@ -46,7 +61,10 @@ class QuoteIsNotValid(APIError):
 
 
 class PriceNotValid(APIError):
-    message = "Price not valid – The price is not valid anymore. This error can occur during big market moves."
+    message = (
+        "Price not valid – The price is not valid anymore. This error can occur "
+        "during big market moves. "
+    )
     code = 1009
 
 
@@ -61,17 +79,26 @@ class NotEnoughBalance(APIError):
 
 
 class MaxRiskExposureReached(APIError):
-    message = "Max risk exposure reached – Please see our FAQ for more information about the risk exposure."
+    message = (
+        "Max risk exposure reached – Please see our FAQ for more information "
+        "about the risk exposure. "
+    )
     code = 1012
 
 
 class MaxCreditExposureReached(APIError):
-    message = "Max credit exposure reached – Please see our FAQ for more information about the credit exposure."
+    message = (
+        "Max credit exposure reached – Please see our FAQ for more information "
+        "about the credit exposure. "
+    )
     code = 1013
 
 
 class NoBtcAddressAssociated(APIError):
-    message = "No BTC address associated – You don’t have a BTC address associated to your account."
+    message = (
+        "No BTC address associated – You don’t have a BTC address associated to "
+        "your account. "
+    )
     code = 1014
 
 
@@ -81,7 +108,10 @@ class TooManyDecimals(APIError):
 
 
 class TradingIsDisabled(APIError):
-    message = "Trading is disabled – May occur after a maintenance or under exceptional circumstances."
+    message = (
+        "Trading is disabled – May occur after a maintenance or under "
+        "exceptional circumstances. "
+    )
     code = 1016
 
 
@@ -126,7 +156,10 @@ class FieldRequired(APIError):
 
 
 class PaginationOffsetTooBig(APIError):
-    message = "Pagination offset too big – Narrow down the data space using parameters such as ‘created*gte’, ‘created*lt’, ‘since’."
+    message = (
+        "Pagination offset too big – Narrow down the data space using "
+        "parameters such as ‘created*gte’, ‘created*lt’, ‘since’. "
+    )
     code = 1102
 
 
@@ -146,7 +179,10 @@ class TheGivenQuantityMustBeSmallerOrEqualToTheContractQuantity(APIError):
 
 
 class YouDontHaveEnoughMargin(APIError):
-    message = "You don’t have enough margin. Please add funds to your account or close some positions."
+    message = (
+        "You don’t have enough margin. Please add funds to your account or "
+        "close some positions. "
+    )
     code = 1502
 
 
