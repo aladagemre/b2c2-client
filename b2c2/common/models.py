@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
+import uuid
 from decimal import Decimal
 from enum import Enum
 from typing import List, Optional, Tuple
@@ -154,10 +155,14 @@ class MarketOrderRequest(BaseModel):
     instrument: str
     side: Side
     quantity: Decimal
-    client_order_id: str
     valid_until: datetime.datetime
     executing_unit: Optional[str]
     force_open: Optional[bool]
+    client_order_id: Optional[str]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.client_order_id = str(uuid.uuid4())
 
     def dict(self, *args, **kwargs):
         d = super(MarketOrderRequest, self).dict()

@@ -2,7 +2,6 @@
 import datetime
 import logging
 import time
-import uuid
 from decimal import Decimal
 
 from PyInquirer import prompt
@@ -143,10 +142,9 @@ class CommandLineInterface:
                 )
                 price = prompt_decimal("Price:", default=rfq_response.price)
                 fok_order_request = FillOrKillOrderRequest(
-                    instrument=instrument.name,  # TODO: use Instrument?
+                    instrument=instrument.name,
                     side=side,
                     quantity=quantity,
-                    client_order_id=str(uuid.uuid4()),  # TODO: move to the class
                     valid_until=valid_until,
                     executing_unit=executing_unit,
                     force_open=force_open,
@@ -159,10 +157,9 @@ class CommandLineInterface:
 
             elif order_type == "MKT":
                 mkt_order_request = MarketOrderRequest(
-                    instrument=instrument.name,  # TODO: use Instrument?
+                    instrument=instrument.name,
                     side=side,
                     quantity=quantity,
-                    client_order_id=str(uuid.uuid4()),  # TODO: move to the class
                     valid_until=valid_until,
                     executing_unit=executing_unit,
                     force_open=force_open,
