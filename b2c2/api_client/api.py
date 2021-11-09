@@ -7,6 +7,7 @@ import requests
 
 from b2c2.api_client.errors import get_api_error_by_code
 from b2c2.api_client.exceptions import (
+    ConnectionLost,
     HTTPException,
     NotFound,
     get_http_exception_by_code,
@@ -157,7 +158,7 @@ class B2C2Client:
     def create_order(self, order_data):
         response = self._post("/order/", data=order_data)
         if not response:
-            raise Exception("Got invalid response from order endpoint.")
+            raise ConnectionLost()
 
         order_response = OrderResponse(**response)
 

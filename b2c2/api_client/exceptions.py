@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 
 
+class ConnectionLost(Exception):
+    message = "Connection is lost"
+
+
 class HTTPException(Exception):
     message = None
 

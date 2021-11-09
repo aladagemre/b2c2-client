@@ -11,6 +11,7 @@ from rich.table import Table
 import b2c2.cli.questions as q
 from b2c2.api_client.api import B2C2Client
 from b2c2.api_client.errors import QuoteIsNotValid
+from b2c2.api_client.exceptions import ConnectionLost
 from b2c2.cli.config import ConfigManager
 from b2c2.cli.decorators import check_connection_before
 from b2c2.cli.utils import (
@@ -155,10 +156,13 @@ class CommandLineInterface:
                 if rfq_response.has_expired():
                     print_red("Your Request for Quote has expired. Please restart.")
                     return
-                order_response = self.api_client.create_fok_order(
-                    fok_order_request=fok_order_request
-                )
-
+                try:
+                    order_response = self.api_client.create_fok_order(
+                        fok_order_request=fok_order_request
+                    )
+                except ConnectionLost:
+                    print_red("Make sure your connection is available.")
+                    return
             elif order_type == "MKT":
                 mkt_order_request = MarketOrderRequest(
                     instrument=instrument.name,
@@ -171,7 +175,11 @@ class CommandLineInterface:
                 if rfq_response.has_expired():
                     print_red("Your Request for Quote has expired. Please restart.")
                     return
-                order_response = self.api_client.create_mkt_order(mkt_order_request)
+                try:
+                    order_response = self.api_client.create_mkt_order(mkt_order_request)
+                except ConnectionLost:
+                    print_red("Make sure your connection is available.")
+                    return
 
             if order_response.is_rejected:
                 print_red("\nYour order was rejected.\n")
