@@ -8,6 +8,7 @@ import requests
 from b2c2.api_client.errors import get_api_error_by_code
 from b2c2.api_client.exceptions import (
     ConnectionLost,
+    Forbidden,
     HTTPException,
     NotFound,
     get_http_exception_by_code,
@@ -72,6 +73,10 @@ class B2C2Client:
             else:
                 logger.warning("Invalid request type:", method)
                 return
+
+            if response.status_code == 403:
+                logger.error("Forbidden. Check your credentials and IP")
+                raise Forbidden()
 
             self._raise_api_errors(response.json())
             response.raise_for_status()

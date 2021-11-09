@@ -10,7 +10,6 @@ from rich.table import Table
 
 import b2c2.cli.questions as q
 from b2c2.api_client.api import B2C2Client
-from b2c2.api_client.errors import QuoteIsNotValid
 from b2c2.api_client.exceptions import ConnectionLost
 from b2c2.cli.config import ConfigManager
 from b2c2.cli.decorators import check_connection_before
