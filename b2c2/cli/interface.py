@@ -10,6 +10,7 @@ from rich.table import Table
 
 import b2c2.cli.questions as q
 from b2c2.api_client.api import B2C2Client
+from b2c2.api_client.errors import QuoteIsNotValid
 from b2c2.cli.config import ConfigManager
 from b2c2.cli.decorators import check_connection_before
 from b2c2.cli.utils import (
@@ -151,6 +152,9 @@ class CommandLineInterface:
                     price=price,
                     acceptable_slippage_in_basis_points=slippage,
                 )
+                if rfq_response.has_expired():
+                    print_red("Your Request for Quote has expired. Please restart.")
+                    return
                 order_response = self.api_client.create_fok_order(
                     fok_order_request=fok_order_request
                 )
@@ -164,6 +168,9 @@ class CommandLineInterface:
                     executing_unit=executing_unit,
                     force_open=force_open,
                 )
+                if rfq_response.has_expired():
+                    print_red("Your Request for Quote has expired. Please restart.")
+                    return
                 order_response = self.api_client.create_mkt_order(mkt_order_request)
 
             if order_response.is_rejected:
