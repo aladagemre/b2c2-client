@@ -1,16 +1,12 @@
 # -*- coding: utf-8 -*-
 import datetime
-import uuid
 from decimal import Decimal
 from http import HTTPStatus
-from unittest import TestCase
-from unittest.mock import MagicMock
 
 from pytest_mock import MockerFixture
 
 from b2c2.api_client.api import B2C2Client
-from b2c2.common.models import Balance, FillOrKillOrderRequest, Instrument, RFQResponse
-from b2c2.mockserver.defaults import BALANCE, INSTRUMENT_PRICES
+from b2c2.common.models import FillOrKillOrderRequest, Instrument
 
 
 def test_get_balance(mocker: MockerFixture, client: B2C2Client, balance: dict):
