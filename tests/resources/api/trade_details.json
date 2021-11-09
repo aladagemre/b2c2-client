@@ -1,0 +1,12 @@
+{
+  "instrument": "BTCUSD.SPOT",
+  "trade_id": "4559deef-ef65-498b-beb2-69d5398259a2",
+  "origin": "rest",
+  "rfq_id": null,
+  "created": "2021-11-09T12:41:43.020149",
+  "price": "57549.0",
+  "quantity": "1.0",
+  "order": "03a85fb7-8b31-4388-b6e7-170c65ed242f",
+  "side": "buy",
+  "executing_unit": "tag"
+}

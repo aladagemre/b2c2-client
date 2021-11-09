@@ -137,8 +137,8 @@ class CommandLineInterface:
             if order_type == "FOK":
                 slippage = prompt_decimal(
                     "Accepted Slippage in Basis Points:",
-                    default=Decimal(2.00),
-                    boundaries=(Decimal(0.0), Decimal(20.0)),
+                    default=Decimal("2.00"),
+                    boundaries=(Decimal("0.0"), Decimal("20.0")),
                 )
                 price = prompt_decimal("Price:", default=rfq_response.price)
                 fok_order_request = FillOrKillOrderRequest(

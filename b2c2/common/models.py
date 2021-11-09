@@ -105,6 +105,12 @@ class RFQResponse(BaseModel):
     # Creation date of this RFQ.
     created: datetime.datetime
 
+    def dict(self, *args, **kwargs):
+        d = super(RFQResponse, self).dict()
+        d["quantity"] = str(d["quantity"])
+        d["price"] = str(d["price"])
+        return d
+
     def display(self):
         print("=" * 20 + " RFQ Response " + "=" * 20)
         for key, value in self.__dict__.items():
@@ -235,6 +241,13 @@ class OrderResponse(BaseModel):
     @property
     def is_rejected(self):
         return self.executed_price is None
+
+    def dict(self, *args, **kwargs):
+        d = super(OrderResponse, self).dict()
+        d["quantity"] = str(d["quantity"])
+        d["price"] = str(d["price"])
+        d["executed_price"] = str(d["price"])
+        return d
 
     def display(self):
         color = "red" if self.is_rejected else "green"

@@ -1,0 +1,29 @@
+[
+  {
+    "name": "BTCUSD.CFD"
+  },
+  {
+    "name": "BTCUSD.SPOT"
+  },
+  {
+    "name": "BTCEUR.SPOT"
+  },
+  {
+    "name": "BTCGBP.SPOT"
+  },
+  {
+    "name": "ETHBTC.SPOT"
+  },
+  {
+    "name": "ETHUSD.SPOT"
+  },
+  {
+    "name": "LTCUSD.SPOT"
+  },
+  {
+    "name": "XRPUSD.SPOT"
+  },
+  {
+    "name": "BCHUSD.SPOT"
+  }
+]

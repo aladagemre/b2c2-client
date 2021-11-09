@@ -1,0 +1,10 @@
+{
+  "valid_until": "2021-11-09T12:42:15.636240",
+  "rfq_id": "5fe556d7-2bcc-4c31-b0aa-cf72901e1009",
+  "client_rfq_id": "624bcfb6-7e82-4e98-81ae-d24a1d120395",
+  "quantity": "1.0",
+  "side": "buy",
+  "instrument": "BTCUSD.SPOT",
+  "price": "57635.3",
+  "created": "2021-11-09T12:41:15.636240"
+}
